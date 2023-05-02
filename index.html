@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poketest</title>
+</head>
+
+<body>
+    <h1 style="text-align: center; padding: 50px 0;">Lista Pokémon</h1>
+    <ul id="pokemon_list_wrapper"></ul>
+    <div id="pokemon_details_wrapper"></div>
+</body>
+
+<script>
+
+function getPokemonList() {
+    fetch('https://pokeapi.co/api/v2/pokemon?limit=25&offset=0')
+        .then(response => response.json())
+        .then(data => {
+            mountList(data.results);
+        })
+        .catch(error => console.error(error));
+}
+
+function getPokemonItem(id) {
+    fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            addPokemon(data);
+        })
+        .catch(error => console.error(error));
+}
+
+function mountList(arrPok) {
+    let i = 1;
+    while (i <= arrPok.length) {
+        getPokemonItem(i)
+        i++;
+    }
+};
+
+function addPokemon(pokemon) {
+    var pokemon_list_ul = document.getElementById('pokemon_list_wrapper');
+    var pokemon_list_li = document.createElement("li");
+    var pokemon_list_img = document.createElement("img");
+    var pokemon_list_p = document.createElement("p");
+    pokemon_list_ul.style = 'display: block; list-style: none';
+    pokemon_list_li.style = 'display: block; width: 200px; float: left; text-align: center; margin-bottom: 50px; cursor: pointer';
+    pokemon_list_li.id = pokemon.id;
+    pokemon_name = pokemon.name
+    pokemon_list_p.appendChild(document.createTextNode(pokemon_name.charAt(0).toUpperCase() + pokemon_name.slice(1)));
+    pokemon_list_img.src = pokemon.sprites.front_default;
+    pokemon_list_ul.appendChild(pokemon_list_li);
+    pokemon_list_li.appendChild(pokemon_list_img);
+    pokemon_list_li.appendChild(pokemon_list_p);
+}
+
+getPokemonList();
+
+</script>
+</html>
