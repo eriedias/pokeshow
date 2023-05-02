@@ -4,27 +4,126 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poketest</title>
+    <title>Pokéshow</title>
+
+    <style>
+        html, body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .pokemon_list_item {
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .pokemon_list_item:hover {
+            background: rgb(232, 229, 240);
+        }
+        td, th {
+            vertical-align: top;
+            padding-bottom: 10px;
+        }
+        #details_stats, #details_skills, #details_type {
+            white-space: pre-wrap;
+        }
+    </style>
 </head>
 
 <body>
-    <h1 style="text-align: center; padding: 50px 0;">Lista Pokémon</h1>
+    
+    <h1 style="text-align: center; padding: 50px 0;">Pokéshow</h1>
     <ul id="pokemon_list_wrapper"></ul>
-    <div id="pokemon_details_wrapper"></div>
+    
+    <div id="pokemon_details_wrapper" style="display: none; margin: 0 auto; width: 260px;">
+        <h2 id="details_name" style="text-align: center; margin-bottom: 0; line-height: 0;"></h2>
+        <p id="details_number" style="font-size: 15px; color: #888888; text-align: center; font-weight: bold;"></p>
+        <div style="text-align: center;">
+            <img id="details_img">
+        </div>
+        <table>
+            <tr>
+                <th style="text-align: right;">Tipo:</th>
+                <td><span id="details_type"></span></td>
+            </tr>
+            <tr>
+                <th style="text-align: right;">Habilidades:</th>
+                <td><span id="details_skills"></span></td>
+            </tr>
+            <tr>
+                <th style="text-align: right;">Status:</th>
+                <td><span id="details_stats"></span></td>
+            </tr>
+        </table>
+        <div style="text-align: center; margin-top: 50px;">
+            <button id="btn_back" onclick="goToList()" style="cursor: pointer;">Voltar</button>
+        </div>
+    </div>
+
 </body>
 
 <script>
 
+// <<< Base
+
+var pokemon_list_ul = document.getElementById('pokemon_list_wrapper');
+pokemon_list_ul.style = 'display: block; list-style: none';
+
+var pokemon_details_div = document.getElementById('pokemon_details_wrapper');
+var details_name        = document.getElementById('details_name');
+var details_number      = document.getElementById('details_number');
+var details_img         = document.getElementById('details_img' );
+var details_type        = document.getElementById('details_type' );
+var details_skills      = document.getElementById('details_skills' );
+var details_stats      = document.getElementById('details_stats' );
+var btn_back            = document.getElementById('btn_back');
+
+pokemon_list_ul.addEventListener('click', function(event) {
+    const li = event.target.closest("li");
+    if (li && li.nodeName === "LI") {
+        hideListPage();
+        showDetailsPage(li.id);
+    }
+});
+
+function goToList() {
+    hideDetailsPage();
+    showListPage();
+}
+
+function firstCharCap(string){
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+// >>> Base
+
+// <<< List Page
+
+function showListPage() {
+    pokemon_list_ul.style = 'display: block; list-style: none';
+}
+function hideListPage() {
+    pokemon_list_ul.style.display = 'none'
+}
+
 function getPokemonList() {
-    fetch('https://pokeapi.co/api/v2/pokemon?limit=25&offset=0')
+    fetch('https://pokeapi.co/api/v2/pokemon?limit=151&offset=0')
         .then(response => response.json())
         .then(data => {
             mountList(data.results);
         })
-        .catch(error => console.error(error));
+        .catch(error => console.error(error))
 }
+/*
+async function getPokemonList() {
+    try {
+        const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=25&offset=0');
+        const data = await response.json();
+        await mountList(data.results);
+    } catch (error) {
+        console.error(error);
+    }
+}
+*/
 
-function getPokemonItem(id) {
+function getPokemonListItem(id) {
     fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`)
         .then(response => response.json())
         .then(data => {
@@ -33,22 +132,21 @@ function getPokemonItem(id) {
         .catch(error => console.error(error));
 }
 
-function mountList(arrPok) {
+async function mountList(arrPok) {
     let i = 1;
     while (i <= arrPok.length) {
-        getPokemonItem(i)
+        getPokemonListItem(i)
         i++;
     }
 };
 
 function addPokemon(pokemon) {
-    var pokemon_list_ul = document.getElementById('pokemon_list_wrapper');
     var pokemon_list_li = document.createElement("li");
     var pokemon_list_img = document.createElement("img");
     var pokemon_list_p = document.createElement("p");
-    pokemon_list_ul.style = 'display: block; list-style: none';
     pokemon_list_li.style = 'display: block; width: 200px; float: left; text-align: center; margin-bottom: 50px; cursor: pointer';
     pokemon_list_li.id = pokemon.id;
+    pokemon_list_li.classList.add("pokemon_list_item");
     pokemon_name = pokemon.name
     pokemon_list_p.appendChild(document.createTextNode(pokemon_name.charAt(0).toUpperCase() + pokemon_name.slice(1)));
     pokemon_list_img.src = pokemon.sprites.front_default;
@@ -57,7 +155,55 @@ function addPokemon(pokemon) {
     pokemon_list_li.appendChild(pokemon_list_p);
 }
 
-getPokemonList();
+getPokemonList()
+
+// >>> List Page
+
+// <<< Details Page
+
+function setDetails(pokemon) {
+    details_name.textContent = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
+    details_number.textContent = `#${pokemon.id}`;
+    details_img.src = pokemon.sprites.front_default;
+    details_type.textContent = '';
+    details_skills.textContent = '';
+    details_stats.textContent = '';
+    let i = 0;
+    while (i < pokemon.types.length){
+        details_type.textContent += `${firstCharCap(pokemon.types[i].type.name)}\n`
+        i++;
+    }
+    let z = 0;
+    while (z < pokemon.types.length){
+        details_skills.textContent += `${firstCharCap(pokemon.abilities[z].ability.name)}\n`
+        z++;
+    }
+    let y = 0;
+    while (y < pokemon.stats.length){
+        details_stats.textContent += `${firstCharCap(pokemon.stats[y].stat.name)}: ${pokemon.stats[y].base_stat}\n`
+        y++;
+    }
+}
+
+function getPokemon(id) {
+    fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            setDetails(data);
+        })
+        .catch(error => console.error(error));
+}
+
+function showDetailsPage(pokemon_id) {
+    pokemon_details_div.style.display = 'block'
+    let pokemon = getPokemon(pokemon_id);
+}
+
+function hideDetailsPage() {
+    pokemon_details_div.style.display = 'none';
+}
+
+// >>>  Details Page
 
 </script>
 </html>
