@@ -12,7 +12,7 @@
         }
         .pokemon_list_item {
             border-radius: 10px;
-            padding: 20px;
+            padding: 10px;
         }
         .pokemon_list_item:hover {
             background: rgb(232, 229, 240);
@@ -144,7 +144,7 @@ function addPokemon(pokemon) {
     var pokemon_list_li = document.createElement("li");
     var pokemon_list_img = document.createElement("img");
     var pokemon_list_p = document.createElement("p");
-    pokemon_list_li.style = 'display: block; width: 200px; float: left; text-align: center; margin-bottom: 50px; cursor: pointer';
+    pokemon_list_li.style = 'display: block; width: 100px; float: left; text-align: center; cursor: pointer';
     pokemon_list_li.id = pokemon.id;
     pokemon_list_li.classList.add("pokemon_list_item");
     pokemon_name = pokemon.name
